@@ -1,0 +1,70 @@
+# private_config.yaml 
+
+# Postgre DB 
+postgre:
+  type: 'PostgreSQL'
+  host: '172.16.57.11'
+  port: 80
+  user: 'postgres'
+  password: ''
+  database: 'dap'
+  schema_name: 'ocean_yard'
+
+# Local Postgre DB 
+local_postgre:
+  type: 'PostgreSQL'
+  host: 'localhost'
+  port: 5432
+  user: 'postgres'
+  password: ''
+  database: 'dap'
+  schema_name: 'ocean_yard'
+  
+  
+# Google map
+google_maps: 
+  client_id: 'KIM-DKA'
+  api_key: 'AIzaSyCTg9UzIoYJSUMwOR1-joQuIKiBwi2iyjU'
+
+# Holiday 
+data.go.kr: 
+  clinet_id: 'KIM-DKA'
+  site_url: 'https://www.data.go.kr/data/15012690/openapi.do'
+  api_url: 'http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo'
+  api_key: '1Z5jo5s7FPsfpCnGD+sa4LCt2FX2w0UyOGKvKzR5sl9e7BQ7s6c8+d9NuZGr888n8m/zYMPuGk89/INL7prjRA=='
+
+# Weather Day API Key
+weather_day_api:
+  client_id: 'KIM-DKA'
+  site_url: 'https://www.data.go.kr/tcs/dss/selectApiDataDetailView.do?publicDataPk=15059093'
+  api_url: 'http://apis.data.go.kr/1360000/AsosDalyInfoService/getWthrDataList'
+  api_key: '1Z5jo5s7FPsfpCnGD+sa4LCt2FX2w0UyOGKvKzR5sl9e7BQ7s6c8+d9NuZGr888n8m/zYMPuGk89/INL7prjRA=='
+
+# Weather Hour API Key
+weather_hour_api:
+  client_id: 'KIM-DKA'
+  site_url: 'https://www.data.go.kr/data/15057210/openapi.do'
+  api_url: 'http://apis.data.go.kr/1360000/AsosHourlyInfoService/getWthrDataList'
+  api_key: '1Z5jo5s7FPsfpCnGD+sa4LCt2FX2w0UyOGKvKzR5sl9e7BQ7s6c8+d9NuZGr888n8m/zYMPuGk89/INL7prjRA=='
+
+# Material Price Master csv 
+material_price_csv:
+  client_id: 'KIM-DKA'
+  site_url: 'https://www.data.go.kr/data/3039951/fileData.do'
+
+# Material Code Master csv 
+material_code_csv:
+  client_id: 'KIM-DKA'
+  site_url: 'https://www.data.go.kr/iim/api/selectAPIAcountView.do'
+
+# Material Supply Master csv 
+material_supply_api:
+  client_id: 'KIM-DKA'
+  site_url: 'https://www.data.go.kr/tcs/dss/selectApiDataDetailView.do?publicDataPk=15100475'
+  api_url: 'http://apis.data.go.kr/1220000/nitemtrade/getNitemtradeList'
+  api_key: '1Z5jo5s7FPsfpCnGD+sa4LCt2FX2w0UyOGKvKzR5sl9e7BQ7s6c8+d9NuZGr888n8m/zYMPuGk89/INL7prjRA=='
+
+# Economic Index Master csv 
+economic_index_csv:
+  client_id: 'KIM-DKA'
+  site_url: 'https://kosis.kr/statHtml/statHtml.do?orgId=301&tblId=DT_512Y007&conn_path=I3'
