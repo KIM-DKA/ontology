@@ -284,10 +284,14 @@ ex:assignedToJig a owl:ObjectProperty ;
 
 ### 10.3 ABox 설계 원칙
 
-**ABox는 최소 관계 트리플만 넣고, 타입은 domain/range로 Reasoner가 일부 채우게 설계 가능**
+**ABox 설계에는 두 가지 패턴이 있습니다:**
+
+#### 패턴 1: domain/range로 자동 추론 (권장)
+
+**최소 관계 트리플만 넣고, 타입은 domain/range로 Reasoner가 자동으로 추론**
 
 ```turtle
-# 최소한의 데이터만 입력
+# 최소한의 데이터만 입력 (관계만)
 ex:BasePlan_001 ex:plannedOnProject ex:Proj_3002 .
 ex:Proj_3002 ex:hasBlock ex:Block_010 .
 ex:Block_010 ex:hasStage ex:Stage_H2G9 .
@@ -298,6 +302,53 @@ ex:Block_010 ex:hasStage ex:Stage_H2G9 .
 → ex:Block_010 rdf:type ex:Block
 → ex:Stage_H2G9 rdf:type ex:WorkingStage
 ```
+
+**장점:**
+- 데이터 입력량 최소화
+- TBox 변경 시 자동 반영
+- 일관성 유지 용이
+
+#### 패턴 2: 명시적 타입 선언 (필요시 사용)
+
+**특정 호선이나 개체를 명시적으로 타입을 지정하는 경우**
+
+```turtle
+# 명시적으로 타입 선언
+ex:Proj_3002 a ex:Project .
+ex:Proj_3003 a ex:Project .
+ex:Block_010 a ex:Block .
+ex:Block_020 a ex:Block .
+
+# 관계 트리플
+ex:BasePlan_001 ex:plannedOnProject ex:Proj_3002 .
+ex:Proj_3002 ex:hasBlock ex:Block_010 .
+ex:Block_010 ex:hasStage ex:Stage_H2G9 .
+```
+
+**사용하는 경우:**
+- **독립적인 개체**를 먼저 정의할 때 (예: 호선 목록을 먼저 등록)
+- **domain/range가 없는 속성**을 사용할 때
+- **명시성이 중요한 경우** (데이터 검증, 가독성)
+- **Reasoner 없이도 타입 정보가 필요한 경우**
+
+**예시: 호선 마스터 데이터를 먼저 등록하는 경우**
+
+```turtle
+# 호선 마스터 데이터 (명시적 타입)
+ex:Proj_H001 a ex:Project ;
+  ex:projNo "H001" .
+ex:Proj_H002 a ex:Project ;
+  ex:projNo "H002" .
+
+# 이후 관계 데이터 입력
+ex:BasePlan_001 ex:plannedOnProject ex:Proj_H001 .
+ex:Block_010 ex:belongsToProject ex:Proj_H001 .
+```
+
+**실무 권장:**
+- **마스터 데이터**(호선, 정반 등)는 명시적 타입 선언
+- **관계 데이터**는 domain/range로 자동 추론 활용
+- 두 패턴을 혼용해도 문제없음
 
 ---
 
