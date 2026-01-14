@@ -1,0 +1,47 @@
+# Fuseki 바이너리 및 실행 파일
+tools/jena-fuseki/
+!tools/jena-fuseki/README
+!tools/jena-fuseki/LICENSE
+!tools/jena-fuseki/NOTICE
+
+# Fuseki 데이터 및 로그
+tools/jena-fuseki/run/
+tools/jena-fuseki/logs/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 임시 파일
+tmp.*
+*.tmp
+
+# 데이터 파일 (선택적 - 필요시 주석 해제)
+# data/main/
+# data/master/
+
+# 설정 파일 (민감 정보 포함 가능)
+# private_configs.yaml
