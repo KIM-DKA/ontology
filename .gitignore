@@ -2,7 +2,7 @@
 tools/jena-fuseki/
 !tools/jena-fuseki/README
 !tools/jena-fuseki/LICENSE
-!tools/jena-fuseki/NOTICE
+# !로 시작하는 .gitignore의 항목은 해당 경로의 파일(여기서는 tools/jena-fuseki/NOTICE)을 무시하지 않고 git에 포함시키라는 의미입니다.
 
 # Fuseki 데이터 및 로그
 tools/jena-fuseki/run/
