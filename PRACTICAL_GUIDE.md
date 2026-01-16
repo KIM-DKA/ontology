@@ -67,8 +67,23 @@ Protégé Desktop은 기본적으로 다음 2개 레벨을 왔다 갔다 합니�
 
 1. **File → New Ontology**
 2. Ontology IRI(예): `http://example.com/shipyard-optim-onto#`
-3. **Active Ontology → Prefixes**에서
-   - `ex:` = `http://example.com/shipyard-optim-onto#`
+3. **Prefixes 설정 방법:**
+
+   **방법 1: Active Ontology 탭에서 설정**
+   - 상단 탭에서 **Active Ontology** 탭 클릭
+   - Active Ontology 탭 내부에 여러 서브탭이 있음 (Ontology, Direct Imports, Mappings, Prefixes 등)
+   - **Prefixes** 서브탭 클릭
+   - `+` 버튼을 클릭하여 새 prefix 추가
+   - Prefix: `ex:`, Namespace: `http://example.com/shipyard-optim-onto#`
+
+   **방법 2: Prefixes 탭이 안 보이는 경우**
+   - **Window → Views → Ontology Views → Prefixes** 메뉴로 활성화
+   - 또는 Active Ontology 탭 내부의 탭들을 좌우로 스크롤하여 찾기
+   - 또는 **Preferences → Views**에서 Prefixes 탭 활성화 확인
+
+   **방법 3: IRI 입력 시 자동 생성**
+   - 새 온톨로지 생성 시 IRI를 입력하면 기본 prefix가 자동으로 생성될 수 있음
+   - 이후 Active Ontology → Prefixes에서 확인 및 수정 가능
 
 ### 1.2 클래스(Classes) 구성
 

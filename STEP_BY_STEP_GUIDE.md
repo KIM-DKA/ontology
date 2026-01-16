@@ -1,4 +1,4 @@
-# 단계별 실행 가이드
+# 단계별 실행 가이드 (Python 우선)
 
 ## ✅ 0단계. 완료됨
 - [x] 실습 시나리오 고정 (제조/공정/자산 구조)
@@ -40,27 +40,176 @@ python -c "import pandas as pd; df = pd.read_csv('data/main/ai4i2020/ai4i2020.cs
 
 ---
 
-## 🛠️ 2단계. 온톨로지 편집기 설치
+## 🐍 2단계. Python 라이브러리 설치
 
 ### 할 일 목록:
-- [ ] Protégé 다운로드 및 설치
-  - 링크: https://protege.stanford.edu/
-  - macOS: .dmg 파일 다운로드 후 설치
-- [ ] Protégé 실행 확인
-- [ ] 기본 인터페이스 익히기
+- [ ] Python 가상환경 생성
+- [ ] 필수 라이브러리 설치 (rdflib, owlready2, pandas)
+- [ ] 설치 확인
 
 **실행 방법:**
 ```bash
-# macOS의 경우
-# 1. 브라우저에서 https://protege.stanford.edu/ 접속
-# 2. Download → Desktop Protégé 다운로드
-# 3. 다운로드한 .dmg 파일 실행하여 설치
-# 4. Applications에서 Protégé 실행
+# Python 가상환경 생성 (선택, 권장)
+python3 -m venv venv
+source venv/bin/activate  # macOS/Linux
+# 또는
+# venv\Scripts\activate  # Windows
+
+# 필수 라이브러리 설치
+pip install rdflib owlready2 pandas
+
+# 설치 확인
+python -c "import rdflib; import owlready2; import pandas; print('All libraries installed successfully')"
+
+# requirements.txt 생성
+pip freeze > requirements.txt
+```
+
+**주요 라이브러리:**
+- **rdflib**: RDF/OWL 파싱, SPARQL 쿼리
+- **owlready2**: OWL 온톨로지 프로그래밍
+- **pandas**: CSV 데이터 처리
+
+---
+
+## 📚 3단계. RDF/OWL 문법 학습 (병행 가능)
+
+### 할 일 목록:
+- [ ] OWL 2 Primer 읽기: https://www.w3.org/TR/owl2-primer/
+- [ ] Turtle 문법 학습: https://www.w3.org/TR/turtle/
+- [ ] TERMINOLOGY.md 참고 (용어 정리)
+
+**간단한 예제 작성해보기:**
+```bash
+# 예제 파일 생성
+cat > data/examples/simple_example.ttl << 'EOF'
+@prefix ex: <http://example.org/ontology#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+ex:Machine a rdfs:Class .
+ex:Process a rdfs:Class .
+ex:hasProcess a rdf:Property ;
+    rdfs:domain ex:Machine ;
+    rdfs:range ex:Process .
+EOF
 ```
 
 ---
 
-## 💾 3단계. 트리플 스토어 설치
+## 🎯 4단계. Python으로 온톨로지 설계 및 작성
+
+### 할 일 목록:
+- [ ] 다운로드한 데이터 분석 (컬럼, 관계 파악)
+- [ ] Class 설계 (Machine, Process, Event, Location, Product)
+- [ ] Property 설계 (hasProcess, locatedAt, produces 등)
+- [ ] Python으로 TBox(스키마) 작성
+- [ ] TTL 파일로 저장
+
+**실행 방법 (Python):**
+
+```bash
+# 온톨로지 설계 스크립트 작성
+cat > script/create_ontology.py << 'EOF'
+from rdflib import Graph, Namespace, Literal, URIRef
+from rdflib.namespace import RDF, RDFS, OWL
+
+# 그래프 생성
+g = Graph()
+
+# 네임스페이스 정의
+ex = Namespace("http://example.org/ontology#")
+g.bind("ex", ex)
+
+# 클래스 정의
+g.add((ex.Machine, RDF.type, OWL.Class))
+g.add((ex.Process, RDF.type, OWL.Class))
+g.add((ex.Event, RDF.type, OWL.Class))
+g.add((ex.Location, RDF.type, OWL.Class))
+g.add((ex.Product, RDF.type, OWL.Class))
+
+# 속성 정의
+hasProcess = ex.hasProcess
+g.add((hasProcess, RDF.type, OWL.ObjectProperty))
+g.add((hasProcess, RDFS.domain, ex.Machine))
+g.add((hasProcess, RDFS.range, ex.Process))
+
+locatedAt = ex.locatedAt
+g.add((locatedAt, RDF.type, OWL.ObjectProperty))
+g.add((locatedAt, RDFS.domain, ex.Machine))
+g.add((locatedAt, RDFS.range, ex.Location))
+
+produces = ex.produces
+g.add((produces, RDF.type, OWL.ObjectProperty))
+g.add((produces, RDFS.domain, ex.Process))
+g.add((produces, RDFS.range, ex.Product))
+
+# 저장
+g.serialize("ontology/manufacturing.ttl", format="turtle")
+print("Ontology saved to ontology/manufacturing.ttl")
+EOF
+
+# 실행
+mkdir -p ontology
+python script/create_ontology.py
+```
+
+**참고:**
+- `PRACTICAL_GUIDE.md`의 클래스/속성 설계 참고
+- 조선 도메인: PROJ_NO, BLK_NO, WSTG_CODE, JIG_CODE 등
+
+---
+
+## 🔧 5단계. CSV → RDF 변환
+
+### 할 일 목록:
+- [ ] CSV 데이터를 RDF로 변환
+- [ ] 변환된 RDF 파일 저장 (`data/rdf/manufacturing_data.ttl`)
+
+**실행 방법 (Python):**
+
+```bash
+# 변환 스크립트 작성
+cat > script/csv_to_rdf.py << 'EOF'
+import pandas as pd
+from rdflib import Graph, Namespace, Literal, URIRef
+from rdflib.namespace import RDF, RDFS
+
+# 온톨로지 로드
+g = Graph()
+g.parse("ontology/manufacturing.ttl", format="turtle")
+
+# 네임스페이스
+ex = Namespace("http://example.org/ontology#")
+
+# CSV 읽기
+df = pd.read_csv('data/main/ai4i2020/ai4i2020.csv')
+
+# CSV를 RDF로 변환
+for idx, row in df.iterrows():
+    # 예시: Machine 인스턴스 생성
+    machine_uri = URIRef(f"{ex}machine_{row.get('machine_id', idx)}")
+    g.add((machine_uri, RDF.type, ex.Machine))
+    
+    # 속성 추가 (예시)
+    if 'temperature' in row:
+        g.add((machine_uri, ex.hasTemperature, Literal(row['temperature'])))
+    
+    # ... 추가 변환 로직
+
+# 저장
+g.serialize("data/rdf/manufacturing_data.ttl", format="turtle")
+print("RDF data saved to data/rdf/manufacturing_data.ttl")
+EOF
+
+# 실행
+mkdir -p data/rdf
+python script/csv_to_rdf.py
+```
+
+---
+
+## 💾 6단계. 트리플 스토어 설치
 
 ### 할 일 목록:
 
@@ -86,9 +235,10 @@ cd /Users/dk/Desktop/file/ontology
 mkdir -p tools
 mv ~/Downloads/apache-jena-fuseki-* tools/jena-fuseki
 
-# Fuseki 실행
+# Fuseki 실행 테스트
 cd tools/jena-fuseki
 ./fuseki-server --update --mem /ds
+# 브라우저에서 http://localhost:3030 접속 확인
 ```
 
 #### 옵션 B: GraphDB Free (GUI 선호 시)
@@ -98,122 +248,66 @@ cd tools/jena-fuseki
 
 ---
 
-## 📚 4단계. RDF/OWL 문법 학습
-
-### 할 일 목록:
-- [ ] OWL 2 Primer 읽기: https://www.w3.org/TR/owl2-primer/
-- [ ] Turtle 문법 학습: https://www.w3.org/TR/turtle/
-- [ ] 간단한 예제 작성해보기
-
-**실행 방법:**
-```bash
-# 예제 파일 생성
-cat > data/examples/simple_example.ttl << 'EOF'
-@prefix ex: <http://example.org/ontology#> .
-@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-
-ex:Machine a rdfs:Class .
-ex:Process a rdfs:Class .
-ex:hasProcess a rdf:Property ;
-    rdfs:domain ex:Machine ;
-    rdfs:range ex:Process .
-EOF
-```
-
----
-
-## 🔄 5단계. CSV → RDF 변환 도구 설치
-
-### 할 일 목록:
-
-#### 옵션 A: OpenRefine (GUI)
-- [ ] OpenRefine 다운로드 및 설치
-  - 링크: https://openrefine.org/
-- [ ] RDF Extension 설치
-  - 링크: https://github.com/OpenRefine/OpenRefine/wiki/RDF-Extension
-
-#### 옵션 B: Python (프로그래밍)
-- [ ] Python 라이브러리 설치
-
-**실행 방법:**
-```bash
-# Python 가상환경 생성 (선택)
-python3 -m venv venv
-source venv/bin/activate
-
-# 필수 라이브러리 설치
-pip install rdflib owlready2 pandas
-
-# requirements.txt 생성
-pip freeze > requirements.txt
-```
-
----
-
-## 🎯 6단계. 온톨로지 설계 및 작성
-
-### 할 일 목록:
-- [ ] 다운로드한 데이터 분석 (컬럼, 관계 파악)
-- [ ] Class 설계 (Machine, Process, Event, Location, Product)
-- [ ] Property 설계 (hasProcess, locatedAt, produces 등)
-- [ ] Protégé로 OWL 파일 작성
-- [ ] 기본 온톨로지 저장 (`ontology/manufacturing.owl`)
-
-**실행 방법:**
-1. Protégé 실행
-2. File → New → Create a new OWL ontology
-3. Classes 탭에서 클래스 추가
-4. Object Properties 탭에서 속성 추가
-5. File → Save As → `ontology/manufacturing.owl`
-
----
-
-## 🔧 7단계. CSV → RDF 변환
-
-### 할 일 목록:
-- [ ] CSV 데이터를 RDF로 변환
-- [ ] 변환된 RDF 파일 저장 (`data/rdf/manufacturing_data.ttl`)
-
-**실행 방법 (Python):**
-```bash
-# 변환 스크립트 작성
-cat > script/csv_to_rdf.py << 'EOF'
-import pandas as pd
-from rdflib import Graph, Namespace, Literal, URIRef
-from rdflib.namespace import RDF, RDFS
-
-# 여기에 변환 로직 작성
-# ...
-EOF
-
-# 실행
-python script/csv_to_rdf.py
-```
-
----
-
-## 💾 8단계. 트리플 스토어에 데이터 적재
+## 💾 7단계. 트리플 스토어에 데이터 적재
 
 ### 할 일 목록:
 - [ ] Fuseki 서버 실행
 - [ ] 데이터셋 생성
-- [ ] RDF 파일 업로드
+- [ ] RDF 파일 업로드 (Python 또는 웹 UI)
 - [ ] 데이터 적재 확인
 
 **실행 방법:**
+
+**방법 1: Python으로 업로드 (권장)**
+```bash
+cat > script/load_to_fuseki.py << 'EOF'
+from rdflib import Graph
+from SPARQLWrapper import SPARQLWrapper, POST, BASIC
+
+# Fuseki 서버 URL
+fuseki_url = "http://localhost:3030/ds"
+
+# RDF 파일 로드
+g = Graph()
+g.parse("ontology/manufacturing.ttl", format="turtle")
+g.parse("data/rdf/manufacturing_data.ttl", format="turtle")
+
+# SPARQL Update로 데이터 적재
+sparql = SPARQLWrapper(fuseki_url + "/update")
+sparql.setMethod(POST)
+sparql.setQuery(f"""
+INSERT DATA {{
+    {g.serialize(format="nt").decode()}
+}}
+""")
+
+try:
+    sparql.query()
+    print("Data loaded successfully!")
+except Exception as e:
+    print(f"Error: {e}")
+EOF
+
+# 실행 (Fuseki 서버가 실행 중이어야 함)
+pip install SPARQLWrapper
+python script/load_to_fuseki.py
+```
+
+**방법 2: 웹 UI로 업로드**
 ```bash
 # Fuseki 서버 실행 (백그라운드)
 cd tools/jena-fuseki
 ./fuseki-server --update --mem /ds &
 
 # 브라우저에서 http://localhost:3030 접속
-# 데이터셋 생성 및 RDF 파일 업로드
+# 1. 데이터셋 선택 또는 생성
+# 2. "Upload files" 클릭
+# 3. TTL 파일 선택하여 업로드
 ```
 
 ---
 
-## 🔍 9단계. SPARQL 질의 실습
+## 🔍 8단계. SPARQL 질의 실습
 
 ### 할 일 목록:
 - [ ] 기본 SPARQL 쿼리 작성
@@ -221,65 +315,140 @@ cd tools/jena-fuseki
 - [ ] Python으로 SPARQL 쿼리 실행
 
 **실행 방법:**
+
+**SPARQL 쿼리 예제:**
 ```bash
 # SPARQL 쿼리 예제 파일 생성
 cat > queries/basic_queries.sparql << 'EOF'
 # 모든 Machine 조회
+PREFIX ex: <http://example.org/ontology#>
+
 SELECT ?machine WHERE {
-    ?machine a :Machine .
+    ?machine a ex:Machine .
 }
 
 # Machine과 Process 관계 조회
 SELECT ?machine ?process WHERE {
-    ?machine :hasProcess ?process .
+    ?machine ex:hasProcess ?process .
 }
 EOF
+```
 
-# Python으로 실행
+**Python으로 실행:**
+```bash
+cat > script/sparql_query.py << 'EOF'
+from SPARQLWrapper import SPARQLWrapper, JSON
+
+# Fuseki SPARQL 엔드포인트
+sparql = SPARQLWrapper("http://localhost:3030/ds/query")
+
+# 쿼리 실행
+query = """
+PREFIX ex: <http://example.org/ontology#>
+
+SELECT ?machine WHERE {
+    ?machine a ex:Machine .
+}
+LIMIT 10
+"""
+
+sparql.setQuery(query)
+sparql.setReturnFormat(JSON)
+results = sparql.query().convert()
+
+# 결과 출력
+for result in results["results"]["bindings"]:
+    print(result["machine"]["value"])
+EOF
+
 python script/sparql_query.py
 ```
 
+**Fuseki 웹 UI에서 실행:**
+- 브라우저에서 http://localhost:3030 접속
+- "Query" 탭 클릭
+- 쿼리 입력 후 실행
+
 ---
 
-## 🧠 10단계. Reasoner 실행
+## 🧠 9단계. Reasoner 실행
 
 ### 할 일 목록:
-- [ ] Protégé에서 Reasoner 실행 (HermiT 또는 ELK)
+- [ ] Python으로 Reasoner 실행 (rdflib 또는 owlready2)
 - [ ] 추론 결과 확인
 - [ ] 새로운 관계/클래스 확인
 
 **실행 방법:**
-1. Protégé에서 온톨로지 열기
-2. Reasoner → HermiT 선택
-3. Reasoner → Start reasoner
-4. 추론된 결과 확인
+
+**방법 1: owlready2로 추론 (권장)**
+```bash
+cat > script/reasoner_test.py << 'EOF'
+from owlready2 import *
+
+# 온톨로지 로드
+onto = get_ontology("file://ontology/manufacturing.ttl").load()
+
+# Reasoner 실행 (HermiT)
+sync_reasoner_pellet(onto, infer_property_values=True, infer_data_property_values=True)
+
+# 추론 결과 확인
+print("Inferred classes:")
+for cls in onto.classes():
+    print(f"  {cls}")
+
+# 추론된 인스턴스 확인
+print("\nInferred instances:")
+for inst in onto.individuals():
+    print(f"  {inst} is a {inst.is_a}")
+EOF
+
+python script/reasoner_test.py
+```
+
+**방법 2: Fuseki에서 추론 (서버 재시작 필요)**
+```bash
+# Fuseki를 추론 모드로 실행
+cd tools/jena-fuseki
+./fuseki-server --update --mem --inference /ds
+
+# 또는 설정 파일에서 추론 엔진 지정
+# fuseki-config.ttl 파일 생성 필요
+```
+
+**방법 3: Protégé에서 확인 (선택)**
+- Protégé에서 온톨로지 열기
+- Reasoner → HermiT 선택
+- Reasoner → Start reasoner
+- 추론된 결과 확인
 
 ---
 
-## 🐍 11단계. Python으로 온톨로지 프로그래밍 (선택)
+## 🛠️ 부록: Protégé 사용 (선택)
 
-### 할 일 목록:
-- [ ] RDFLib로 온톨로지 읽기/쓰기
-- [ ] owlready2로 온톨로지 프로그래밍
-- [ ] Python 스크립트 작성
+### Protégé가 필요한 경우:
+- 시각적으로 온톨로지 구조 확인
+- Reasoner 결과를 GUI로 확인
+- 온톨로지 검증 및 디버깅
+
+### 설치 및 사용:
+- [ ] Protégé 다운로드 및 설치
+  - 링크: https://protege.stanford.edu/
+- [ ] Python으로 만든 TTL 파일을 Protégé에서 열기
+- [ ] 시각화 및 검증
 
 **실행 방법:**
 ```bash
-# 예제 스크립트 작성
-cat > script/ontology_python.py << 'EOF'
-from rdflib import Graph
-
-g = Graph()
-g.parse("ontology/manufacturing.owl")
-# ... 작업 수행
-EOF
-
-python script/ontology_python.py
+# macOS의 경우
+# 1. 브라우저에서 https://protege.stanford.edu/ 접속
+# 2. Download → Desktop Protégé 다운로드
+# 3. 다운로드한 .dmg 파일 실행하여 설치
+# 4. Applications에서 Protégé 실행
+# 5. File → Open → ontology/manufacturing.ttl 선택
 ```
 
 ---
 
-## 📊 12단계. 결과 정리 및 문서화
+## 📊 10단계. 결과 정리 및 문서화
 
 ### 할 일 목록:
 - [ ] 온톨로지가 실제로 필요했던 지점 정리
@@ -309,23 +478,30 @@ EOF
 ## 🚀 다음 단계 추천
 
 1. **지금 바로 시작**: 1단계 데이터 다운로드
-2. **병렬 작업 가능**: 2단계(Protégé 설치)와 3단계(Fuseki 설치) 동시 진행
-3. **학습 병행**: 4단계(RDF/OWL 문법)는 다른 단계와 병행 가능
+2. **Python 우선**: 2단계 라이브러리 설치 → 4단계 온톨로지 작성
+3. **병렬 작업 가능**: 3단계(문법 학습)는 다른 단계와 병행 가능
+4. **트리플 스토어**: 6단계 설치 → 7단계 적재 → 8단계 SPARQL
 
 ---
 
 ## 📝 체크리스트 요약
 
 - [x] 1단계: 데이터 다운로드
-- [x] 2단계: Protégé 설치
-- [x] 3단계: Fuseki 설치
-- [ ] 4단계: RDF/OWL 문법 학습
-- [ ] 5단계: 변환 도구 설치
-- [ ] 6단계: 온톨로지 설계 및 작성
-- [ ] 7단계: CSV → RDF 변환
-- [ ] 8단계: 트리플 스토어 적재
-- [ ] 9단계: SPARQL 질의
-- [ ] 10단계: Reasoner 실행
-- [ ] 11단계: Python 프로그래밍 (선택)
-- [ ] 12단계: 결과 정리
+- [ ] 2단계: Python 라이브러리 설치
+- [ ] 3단계: RDF/OWL 문법 학습 (병행 가능)
+- [ ] 4단계: Python으로 온톨로지 설계 및 작성
+- [ ] 5단계: CSV → RDF 변환
+- [ ] 6단계: 트리플 스토어 설치
+- [ ] 7단계: 트리플 스토어 적재
+- [ ] 8단계: SPARQL 질의
+- [ ] 9단계: Reasoner 실행
+- [ ] 10단계: 결과 정리
 
+---
+
+## 💡 팁
+
+- **Python 우선 접근**: Protégé보다 Python이 더 빠르고 자동화 가능
+- **TTL 파일 관리**: Git으로 버전관리 가능
+- **스크립트 재사용**: CSV → RDF 변환 스크립트는 데이터 업데이트 시 재사용
+- **Fuseki 웹 UI**: 데이터 확인 및 디버깅에 유용
