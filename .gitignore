@@ -19,6 +19,7 @@ venv/
 env/
 ENV/
 .venv
+ontology_env/
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -45,3 +46,6 @@ tmp.*
 
 # 설정 파일 (민감 정보 포함 가능)
 # private_configs.yaml
+
+# 외부 실습 레포 (추적 안 함)
+rag-ontology-course/

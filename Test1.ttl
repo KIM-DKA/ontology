@@ -1,0 +1,210 @@
+@prefix : <http://example.com/shipyard-optim-onto#> .
+@prefix ex: <http://example.com/shipyard-optim-onto#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@base <http://example.com/shipyard-optim-onto#> .
+
+<http://example.com/shipyard-optim-onto#> rdf:type owl:Ontology .
+
+#################################################################
+#    Object Properties
+#################################################################
+
+###  http://example.com/shipyard-optim-onto#allowedJig
+ex:allowedJig rdf:type owl:ObjectProperty ;
+              rdfs:domain ex:EligibilityRule ;
+              rdfs:range ex:JIG_CODE .
+
+
+###  http://example.com/shipyard-optim-onto#assignedJig
+ex:assignedJig rdf:type owl:ObjectProperty ;
+               rdfs:domain ex:MoveJob ;
+               rdfs:range ex:JIG_CODE .
+
+
+###  http://example.com/shipyard-optim-onto#belongsToVessel
+ex:belongsToVessel rdf:type owl:ObjectProperty ;
+                   rdfs:domain ex:BLK_NO ;
+                   rdfs:range ex:PROJ_NO .
+
+
+###  http://example.com/shipyard-optim-onto#jobBlock
+ex:jobBlock rdf:type owl:ObjectProperty ;
+            rdfs:domain ex:MoveJob ;
+            rdfs:range [ rdf:type owl:Restriction ;
+                         owl:onProperty ex:jobBlock ;
+                         owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                         owl:onClass ex:BLK_NO
+                       ] .
+
+
+###  http://example.com/shipyard-optim-onto#jobStage
+ex:jobStage rdf:type owl:ObjectProperty ;
+            rdfs:domain ex:MoveJob ;
+            rdfs:range [ rdf:type owl:Restriction ;
+                         owl:onProperty ex:jobBlock ;
+                         owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                         owl:onClass ex:WSTG_CODE
+                       ] .
+
+
+###  http://example.com/shipyard-optim-onto#jobVessel
+ex:jobVessel rdf:type owl:ObjectProperty ;
+             rdfs:domain ex:MoveJob ;
+             rdfs:range [ rdf:type owl:Restriction ;
+                          owl:onProperty ex:jobBlock ;
+                          owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                          owl:onClass ex:PROJ_NO
+                        ] .
+
+
+###  http://example.com/shipyard-optim-onto#ruleBlock
+ex:ruleBlock rdf:type owl:ObjectProperty ;
+             rdfs:domain ex:EligibilityRule ;
+             rdfs:range ex:BLK_NO .
+
+
+###  http://example.com/shipyard-optim-onto#ruleStage
+ex:ruleStage rdf:type owl:ObjectProperty ;
+             rdfs:domain ex:EligibilityRule ;
+             rdfs:range ex:WSTG_CODE .
+
+
+###  http://example.com/shipyard-optim-onto#ruleVessel
+ex:ruleVessel rdf:type owl:ObjectProperty ;
+              rdfs:domain ex:EligibilityRule ;
+              rdfs:range ex:PROJ_NO .
+
+
+#################################################################
+#    Data properties
+#################################################################
+
+###  http://example.com/shipyard-optim-onto#VesselId
+ex:VesselId rdf:type owl:DatatypeProperty ,
+                     owl:FunctionalProperty ;
+            rdfs:domain ex:PROJ_NO ;
+            rdfs:range xsd:string .
+
+
+###  http://example.com/shipyard-optim-onto#blockId
+ex:blockId rdf:type owl:DatatypeProperty ,
+                    owl:FunctionalProperty ;
+           rdfs:domain ex:BLK_NO ;
+           rdfs:range xsd:string .
+
+
+###  http://example.com/shipyard-optim-onto#blockWeightTon
+ex:blockWeightTon rdf:type owl:DatatypeProperty ,
+                           owl:FunctionalProperty ;
+                  rdfs:domain ex:BLK_NO ;
+                  rdfs:range xsd:decimal .
+
+
+###  http://example.com/shipyard-optim-onto#jigId
+ex:jigId rdf:type owl:DatatypeProperty ,
+                  owl:FunctionalProperty ;
+         rdfs:domain ex:JIG_CODE ;
+         rdfs:range xsd:string .
+
+
+###  http://example.com/shipyard-optim-onto#jobId
+ex:jobId rdf:type owl:DatatypeProperty ,
+                  owl:FunctionalProperty ;
+         rdfs:domain ex:MoveJob ;
+         rdfs:range xsd:string .
+
+
+###  http://example.com/shipyard-optim-onto#priority
+ex:priority rdf:type owl:DatatypeProperty ,
+                     owl:FunctionalProperty ;
+            rdfs:domain ex:MoveJob ;
+            rdfs:range xsd:integer .
+
+
+###  http://example.com/shipyard-optim-onto#stageCode
+ex:stageCode rdf:type owl:DatatypeProperty ,
+                      owl:FunctionalProperty ;
+             rdfs:domain ex:WSTG_CODE ;
+             rdfs:range xsd:string .
+
+
+#################################################################
+#    Classes
+#################################################################
+
+###  http://example.com/shipyard-optim-onto#BLK_NO
+ex:BLK_NO rdf:type owl:Class ;
+          rdfs:subClassOf [ rdf:type owl:Restriction ;
+                            owl:onProperty ex:belongsToVessel ;
+                            owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                            owl:onClass ex:PROJ_NO
+                          ] .
+
+
+###  http://example.com/shipyard-optim-onto#EligibilityRule
+ex:EligibilityRule rdf:type owl:Class ;
+                   rdfs:subClassOf [ rdf:type owl:Restriction ;
+                                     owl:onProperty ex:allowedJig ;
+                                     owl:someValuesFrom ex:JIG_CODE
+                                   ] ,
+                                   [ rdf:type owl:Restriction ;
+                                     owl:onProperty ex:ruleBlock ;
+                                     owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                     owl:onClass ex:BLK_NO
+                                   ] ,
+                                   [ rdf:type owl:Restriction ;
+                                     owl:onProperty ex:ruleStage ;
+                                     owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                     owl:onClass ex:WSTG_CODE
+                                   ] ,
+                                   [ rdf:type owl:Restriction ;
+                                     owl:onProperty ex:ruleVessel ;
+                                     owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                     owl:onClass ex:PROJ_NO
+                                   ] .
+
+
+###  http://example.com/shipyard-optim-onto#JIG_CODE
+ex:JIG_CODE rdf:type owl:Class .
+
+
+###  http://example.com/shipyard-optim-onto#MoveJob
+ex:MoveJob rdf:type owl:Class ;
+           rdfs:subClassOf [ rdf:type owl:Restriction ;
+                             owl:onProperty ex:jobBlock ;
+                             owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                             owl:onClass ex:BLK_NO
+                           ] ,
+                           [ rdf:type owl:Restriction ;
+                             owl:onProperty ex:jobStage ;
+                             owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                             owl:onClass ex:WSTG_CODE
+                           ] ,
+                           [ rdf:type owl:Restriction ;
+                             owl:onProperty ex:jobVessel ;
+                             owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                             owl:onClass ex:PROJ_NO
+                           ] .
+
+
+###  http://example.com/shipyard-optim-onto#PROJ_NO
+ex:PROJ_NO rdf:type owl:Class .
+
+
+###  http://example.com/shipyard-optim-onto#WSTG_CODE
+ex:WSTG_CODE rdf:type owl:Class .
+
+
+#################################################################
+#    Individuals
+#################################################################
+
+###  http://example.com/shipyard-optim-onto#PROJ_NO
+ex:PROJ_NO rdf:type owl:NamedIndividual .
+
+
+###  Generated by the OWL API (version 4.5.29.2024-05-13T12:11:03Z) https://github.com/owlcs/owlapi
